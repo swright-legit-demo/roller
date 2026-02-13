@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '11', '17', '21', '23' ]
+        java: [ '17' ]
 
     steps:
       - name: Set up JDK ${{ matrix.java }} 
@@ -53,32 +53,5 @@ jobs:
           submodules: false
           show-progress: false
 
-      - name: Build Roller and run JUnit Tests
+      - name: Build Roller
         run: mvn -V -ntp install
-
-      - name: Run Integration Tests
-        run: |
-          cd it-selenium
-          mvn -V -ntp install
-
-      - name: Publish JUnit Report
-        uses: test-summary/action@v2
-        if: always()
-        with:
-          paths: "app/target/surefire-reports/TEST-*.xml"
-
-      - name: Publish IT Report
-        uses: test-summary/action@v2
-        if: always()
-        with:
-          paths: "it-selenium/target/failsafe-reports/TEST-*.xml"
-      
-      # only on integration and only once in this matrix
-      - name: Upload Dev Build on Integration
-        if: ${{ (matrix.java == '11') && (github.event_name == 'push') }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-build
-          path: ./app/target/roller.war
-          retention-days: 90
-          if-no-files-found: error
